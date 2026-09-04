@@ -1,0 +1,10 @@
+import { AlertTriangle, PackageCheck, WalletCards } from 'lucide-react';
+import Card from '../components/Card'; import DataTable from '../components/DataTable'; import { Row } from '../types'; import { money } from '../utils/format';
+export default function DashboardPage({products,sales,bills}:{products:Row[];sales:Row[];bills:Row[]}){
+ const total=bills.reduce((a,b)=>a+Number(b.Amount||0),0);const paid=bills.reduce((a,b)=>a+Number(b.PaidAmount||0),0);const balance=bills.reduce((a,b)=>a+Number(b.BalanceAmount??b.Amount??0),0);const overdue=bills.filter(b=>Number(b.IsOverdue??0)===1).reduce((a,b)=>a+Number(b.BalanceAmount||0),0);const low=products.filter(p=>Number(p.StockQty)<10);
+ return <>
+  <div className="page-hero"><div><span className="eyebrow">營運總覽</span><h1>儀表板</h1><p>快速掌握銷售、收款、應收與庫存風險。</p></div><div className="hero-meta"><span className="live-dot"></span>資料已同步</div></div>
+  <div className="cards"><Card t="商品品項" v={products.length} sub={`${low.length} 項低庫存`}/><Card t="銷貨總額" v={money(total)} sub={`${sales.length} 張銷貨單`}/><Card t="已收款" v={money(paid)} sub="累計實收"/><Card t="應收帳款" v={money(balance)} sub={overdue>0?`逾期 ${money(overdue)}`:'目前無逾期'}/></div>
+  <div className="insight-grid"><div className={`insight-card ${overdue>0?'warning':''}`}><div className="insight-icon"><WalletCards size={20}/></div><div><span>逾期應收</span><strong>{money(overdue)}</strong><small>{overdue>0?'建議優先追蹤逾期帳款':'目前帳款狀況良好'}</small></div></div><div className={`insight-card ${low.length?'warning':''}`}><div className="insight-icon"><AlertTriangle size={20}/></div><div><span>低庫存品項</span><strong>{low.length}</strong><small>{low.length?'請評估是否需要補貨':'庫存水位正常'}</small></div></div><div className="insight-card"><div className="insight-icon"><PackageCheck size={20}/></div><div><span>庫存品項</span><strong>{products.length}</strong><small>目前建檔商品數量</small></div></div></div>
+  <section className="content-section"><div className="section-head"><div><h2>低庫存監控</h2><p>庫存少於 10 的商品會列於此處。</p></div><span className="section-count">{low.length} 項</span></div><DataTable rows={low} cols={['Sku','Name','StockQty','Unit']}/></section>
+ </>}
